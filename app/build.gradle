@@ -1,5 +1,29 @@
 apply plugin: 'com.android.library'
 
+ext {
+    bintrayRepo = 'maven'
+    bintrayName = 'ormlite-sqlcipher'
+
+    publishedGroupId = 'com.j256.ormlite.cipher'
+    libraryName = 'ormlite-sqlcipher'
+    artifact = 'ormlite-sqlcipher'
+
+    libraryDescription = 'Patched OrmLite Android library with SQLCipher'
+
+    siteUrl = 'https://github.com/Andoctorey/ormlite-sqlcipher'
+    gitUrl = 'https://github.com/Andoctorey/ormlite-sqlcipher.git'
+
+    libraryVersion = '0.1'
+
+    developerId = 'andoctorey'
+    developerName = 'Andrey Yegorov'
+    developerEmail = 'a.d.yegorov+sqlcipher@gmail.com'
+
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    allLicenses = ["Apache-2.0"]
+}
+
 android {
     compileSdkVersion 24
     buildToolsVersion "24.0.1"
@@ -30,3 +54,6 @@ dependencies {
     compile 'com.j256.ormlite:ormlite-core:5.0'
     compile 'com.j256.ormlite:ormlite-android:5.0'
 }
+
+apply from: 'https://raw.githubusercontent.com/Andoctorey/ormlite-sqlcipher/master/app/jscenter/installv1.gradle'
+apply from: 'https://raw.githubusercontent.com/Andoctorey/ormlite-sqlcipher/master/app/jscenter/bintrayv1.gradle'
