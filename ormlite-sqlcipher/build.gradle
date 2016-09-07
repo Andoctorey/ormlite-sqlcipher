@@ -1,0 +1,66 @@
+apply plugin: 'com.android.library'
+
+ext {
+    bintrayRepo = 'public'
+    bintrayName = 'ormlite-sqlcipher'
+
+    publishedGroupId = 'com.j256.ormlite.cipher'
+    libraryName = 'ormlite-sqlcipher'
+    artifact = 'ormlite-sqlcipher'
+
+    libraryDescription = 'Patched OrmLite Android library with SQLCipher'
+
+    siteUrl = 'https://github.com/Andoctorey/ormlite-sqlcipher'
+    gitUrl = 'https://github.com/Andoctorey/ormlite-sqlcipher.git'
+
+    libraryVersion = '1.0'
+
+    developerId = 'andoctorey'
+    developerName = 'Andrey Yegorov'
+    developerEmail = 'a.d.yegorov@gmail.com'
+
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    allLicenses = ["Apache-2.0"]
+}
+
+android {
+    compileSdkVersion 24
+    buildToolsVersion "24.0.1"
+
+    defaultConfig {
+        minSdkVersion 14
+        targetSdkVersion 24
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
+    }
+
+    lintOptions {
+        abortOnError false
+        disable 'WeakerAccess'
+    }
+
+    tasks.withType(Javadoc).all { enabled = false }
+}
+
+dependencies {
+    compile 'net.zetetic:android-database-sqlcipher:3.5.3@aar'
+    compile 'com.android.support:appcompat-v7:24.2.0'
+    compile 'com.j256.ormlite:ormlite-core:5.0'
+    compile 'com.j256.ormlite:ormlite-android:5.0'
+}
+
+apply from: 'https://raw.githubusercontent.com/Andoctorey/ormlite-sqlcipher/master/ormlite-sqlcipher/jcenter/installv1.gradle'
+apply from: 'https://raw.githubusercontent.com/Andoctorey/ormlite-sqlcipher/master/ormlite-sqlcipher/jcenter/bintrayv1.gradle'
