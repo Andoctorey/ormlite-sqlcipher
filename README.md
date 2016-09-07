@@ -3,19 +3,20 @@ Patched OrmLite Android library with SQLCipher
 
 # Installation
 
-To integrate the core AAR, the Gradle recipe is:
+```allprojects {  
+    repositories {  
+        jcenter()  
+    }  
+}```  
 
-allprojects {
-    repositories {
-        jcenter()
-    }
-}
+```dependencies {  
+    compile 'com.j256.ormlite.cipher:ormlite-sqlcipher:1.0'  
+    compile 'com.j256.ormlite:ormlite-core:5.0'  
+    compile 'com.j256.ormlite:ormlite-android:5.0'  
+    compile 'net.zetetic:android-database-sqlcipher:3.5.3@aar'  
+}```  
 
-dependencies {
-    /* database */
-    compile 'com.j256.ormlite.cipher:ormlite-sqlcipher@aar'
-    compile 'com.j256.ormlite:ormlite-core:5.0'
-    compile 'com.j256.ormlite:ormlite-android:5.0'
-}
+# Usage
 
-You are also welcome to clone this repo and use as Android library project in source form.
+
+
