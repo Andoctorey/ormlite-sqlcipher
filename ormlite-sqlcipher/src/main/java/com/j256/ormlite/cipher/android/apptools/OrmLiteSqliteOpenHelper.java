@@ -151,7 +151,7 @@ public abstract class OrmLiteSqliteOpenHelper extends SQLiteOpenHelper {
         if (!isOpen) {
             // we don't throw this exception, but log it for debugging purposes
             logger.warn(new IllegalStateException(), "Getting connectionSource was called after closed");
-        } else if (connectionSource==null){
+        } else if (connectionSource == null) {
             connectionSource = new AndroidConnectionSource(this, getPassword());
         }
         return connectionSource;
@@ -194,7 +194,7 @@ public abstract class OrmLiteSqliteOpenHelper extends SQLiteOpenHelper {
     @Override
     public final void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         ConnectionSource cs = getConnectionSource();
-		/*
+        /*
 		 * The method is called by Android database helper's get-database calls when Android detects that we need to
 		 * create or update the database. So we have to use the database argument and save a connection to it on the
 		 * AndroidConnectionSource, otherwise it will go recursive if the subclass calls getConnectionSource().
@@ -225,7 +225,10 @@ public abstract class OrmLiteSqliteOpenHelper extends SQLiteOpenHelper {
     @Override
     public void close() {
         super.close();
-        connectionSource.close();
+        if (connectionSource != null) {
+            connectionSource.close();
+            connectionSource=null;
+        }
 		/*
 		 * We used to set connectionSource to null here but now we just set the closed flag and then log heavily if
 		 * someone uses getConectionSource() after this point.
