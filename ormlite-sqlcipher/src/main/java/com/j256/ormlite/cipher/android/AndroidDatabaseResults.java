@@ -18,7 +18,7 @@ import java.util.Map;
 
 /**
  * Android implementation of our results object.
- * 
+ *
  * @author kevingalligan, graywatson
  */
 public class AndroidDatabaseResults implements DatabaseResults {

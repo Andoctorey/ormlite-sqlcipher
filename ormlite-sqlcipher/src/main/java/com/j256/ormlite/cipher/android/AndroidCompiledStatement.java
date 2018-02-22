@@ -20,7 +20,7 @@ import java.util.List;
 
 /**
  * Android implementation of the compiled statement.
- * 
+ *
  * @author kevingalligan, graywatson
  */
 public class AndroidCompiledStatement implements CompiledStatement {
@@ -42,7 +42,7 @@ public class AndroidCompiledStatement implements CompiledStatement {
 	private com.j256.ormlite.cipher.android.compat.ApiCompatibility.CancellationHook cancellationHook;
 
 	public AndroidCompiledStatement(String sql, SQLiteDatabase db, StatementType type, boolean cancelQueriesEnabled,
-			boolean cacheStore) {
+									boolean cacheStore) {
 		this.sql = sql;
 		this.db = db;
 		this.type = type;
@@ -170,7 +170,7 @@ public class AndroidCompiledStatement implements CompiledStatement {
 
 	/***
 	 * This is mostly an internal class but is exposed for those people who need access to the Cursor itself.
-	 * 
+	 *
 	 * <p>
 	 * NOTE: This is not thread safe. Not sure if we need it, but keep that in mind.
 	 * </p>

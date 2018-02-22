@@ -20,7 +20,7 @@ import java.sql.SQLException;
 /**
  * Android version of the connection source. Takes a standard Android {@link SQLiteOpenHelper}. For best results, use
  * {@link com.j256.ormlite.cipher.android.apptools.OrmLiteSqliteOpenHelper}. You can also construct with a {@link SQLiteDatabase}.
- * 
+ *
  * @author kevingalligan, graywatson
  */
 public class AndroidConnectionSource extends BaseConnectionSource implements ConnectionSource {
@@ -53,7 +53,7 @@ public class AndroidConnectionSource extends BaseConnectionSource implements Con
 		/*
 		 * We have to use the read-write connection because getWritableDatabase() can call close on
 		 * getReadableDatabase() in the future. This has something to do with Android's SQLite connection management.
-		 * 
+		 *
 		 * See android docs: http://developer.android.com/reference/android/database/sqlite/SQLiteOpenHelper.html
 		 */
 		return getReadWriteConnection(tableName);
@@ -141,7 +141,7 @@ public class AndroidConnectionSource extends BaseConnectionSource implements Con
 
 	/**
 	 * Set to true to enable the canceling of queries.
-	 * 
+	 *
 	 * <p>
 	 * <b>NOTE:</b> This will incur a slight memory increase for all Cursor based queries -- even if cancel is not
 	 * called for them.

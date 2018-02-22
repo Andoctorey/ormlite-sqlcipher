@@ -13,7 +13,7 @@ ext {
     siteUrl = 'https://github.com/Andoctorey/ormlite-sqlcipher'
     gitUrl = 'https://github.com/Andoctorey/ormlite-sqlcipher.git'
 
-    libraryVersion = '1.1'
+    libraryVersion = '1.2'
 
     developerId = 'andoctorey'
     developerName = 'Andrey Yegorov'
@@ -25,12 +25,12 @@ ext {
 }
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion "24.0.1"
+    compileSdkVersion 27
+    buildToolsVersion "27.0.3"
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 24
+        targetSdkVersion 27
         versionCode 1
         versionName "1.0"
     }
@@ -43,8 +43,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_7
-        targetCompatibility JavaVersion.VERSION_1_7
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 
     lintOptions {
@@ -56,10 +56,10 @@ android {
 }
 
 dependencies {
-    compile 'net.zetetic:android-database-sqlcipher:3.5.3@aar'
-    compile 'com.android.support:appcompat-v7:24.2.0'
-    compile 'com.j256.ormlite:ormlite-core:5.0'
-    compile 'com.j256.ormlite:ormlite-android:5.0'
+    compile 'net.zetetic:android-database-sqlcipher:3.5.9@aar'
+    compile 'com.android.support:appcompat-v7:27.0.2'
+    compile 'com.j256.ormlite:ormlite-core:5.1'
+    compile 'com.j256.ormlite:ormlite-android:5.1'
 }
 
 apply from: 'https://raw.githubusercontent.com/Andoctorey/ormlite-sqlcipher/master/ormlite-sqlcipher/jcenter/installv1.gradle'

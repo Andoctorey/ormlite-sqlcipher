@@ -13,6 +13,8 @@ import java.lang.reflect.Field;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -28,15 +30,16 @@ import com.j256.ormlite.table.DatabaseTableConfigLoader;
 
 /**
  * Database configuration file helper class that is used to write a configuration file into the raw resource
- * sub-directory to speed up DAO creation.
- * 
+ * sub-directory to speed up DAO creation. If run from main, it takes an optional "-s" argument which turns on sorting
+ * of fields by name to produce more deterministic output followed by the name of the output config file.
+ *
  * <p>
  * With help from the user list and especially Ian Dees, we discovered that calls to annotation methods in Android are
  * _very_ expensive because Method.equals() was doing a huge toString(). This was causing folks to see 2-3 seconds
- * startup time when configuring 10-15 DAOs because of 1000s of calls to @DatabaseField methods. See <a
- * href="https://code.google.com/p/android/issues/detail?id=7811" >this Android bug report</a>.
+ * startup time when configuring 10-15 DAOs because of 1000s of calls to @DatabaseField methods. See
+ * <a href="https://code.google.com/p/android/issues/detail?id=7811" >this Android bug report</a>.
  * </p>
- * 
+ *
  * <p>
  * I added this utility class which writes a configuration file into the raw resource "res/raw" directory inside of your
  * project containing the table and field names and associated details. This file can then be loaded into the
@@ -45,12 +48,12 @@ import com.j256.ormlite.table.DatabaseTableConfigLoader;
  * constructor. This means that you can configure your classes _without_ any runtime calls to annotations. It seems
  * significantly faster.
  * <p>
- * 
+ *
  * <p>
  * <b>WARNING:</b> Although this is fast, the big problem is that you have to remember to regenerate the config file
  * whenever you edit one of your database classes. There is no way that I know of to do this automagically.
  * </p>
- * 
+ *
  * @author graywatson
  */
 public class OrmLiteConfigUtil {
@@ -70,15 +73,28 @@ public class OrmLiteConfigUtil {
 	protected static int maxFindSourceLevel = 20;
 
 	private static final DatabaseType databaseType = new SqliteAndroidDatabaseType();
+	private static final ClassComparator classComparator = new ClassComparator();
 
 	/**
-	 * A call through to {@link #writeConfigFile(String)} taking the file name from the single command line argument.
+	 * A call through to {@link #writeConfigFile(File, boolean)}. It takes an optional "-s" argument which turns on
+	 * sorting of classes by name to produce more deterministic output followed by the name of the output config file.
 	 */
 	public static void main(String[] args) throws Exception {
-		if (args.length != 1) {
-			throw new IllegalArgumentException("Main can take a single file-name argument.");
+		int argCount = 0;
+		boolean sortClasses = false;
+		for (; argCount < args.length; argCount++) {
+			String arg = args[argCount];
+			if (arg.equals("-s")) {
+				sortClasses = true;
+			} else {
+				break;
+			}
 		}
-		writeConfigFile(args[0]);
+		// we should have one arg left
+		if (argCount != args.length - 1) {
+			throw new IllegalArgumentException("Usage: OrmLiteConfigUtil [-s] config-file-name");
+		}
+		writeConfigFile(args[argCount], sortClasses);
 	}
 
 	/**
@@ -86,22 +102,44 @@ public class OrmLiteConfigUtil {
 	 * the raw folder.
 	 */
 	public static void writeConfigFile(String fileName) throws SQLException, IOException {
+		writeConfigFile(fileName, false);
+	}
+
+	/**
+	 * Finds the annotated classes in the current directory or below and writes a configuration file to the file-name in
+	 * the raw folder.
+	 *
+	 * @param sortClasses
+	 *            Set to true to sort the classes by name before the file is generated.
+	 */
+	public static void writeConfigFile(String fileName, boolean sortClasses) throws SQLException, IOException {
 		List<Class<?>> classList = new ArrayList<Class<?>>();
 		findAnnotatedClasses(classList, new File("."), 0);
-		writeConfigFile(fileName, classList.toArray(new Class[classList.size()]));
+		writeConfigFile(fileName, classList.toArray(new Class[classList.size()]), sortClasses);
 	}
 
 	/**
 	 * Writes a configuration fileName in the raw directory with the configuration for classes.
 	 */
 	public static void writeConfigFile(String fileName, Class<?>[] classes) throws SQLException, IOException {
+		writeConfigFile(fileName, classes, false);
+	}
+
+	/**
+	 * Writes a configuration fileName in the raw directory with the configuration for classes.
+	 *
+	 * @param sortClasses
+	 *            Set to true to sort the classes by name before the file is generated.
+	 */
+	public static void writeConfigFile(String fileName, Class<?>[] classes, boolean sortClasses)
+			throws SQLException, IOException {
 		File rawDir = findRawDir(new File("."));
 		if (rawDir == null) {
 			System.err.println("Could not find " + RAW_DIR_NAME + " directory which is typically in the "
 					+ RESOURCE_DIR_NAME + " directory");
 		} else {
 			File configFile = new File(rawDir, fileName);
-			writeConfigFile(configFile, classes);
+			writeConfigFile(configFile, classes, sortClasses);
 		}
 	}
 
@@ -109,44 +147,105 @@ public class OrmLiteConfigUtil {
 	 * Finds the annotated classes in the current directory or below and writes a configuration file.
 	 */
 	public static void writeConfigFile(File configFile) throws SQLException, IOException {
-		writeConfigFile(configFile, new File("."));
+		writeConfigFile(configFile, false);
+	}
+
+	/**
+	 * Finds the annotated classes in the current directory or below and writes a configuration file.
+	 *
+	 * @param sortClasses
+	 *            Set to true to sort the classes by name before the file is generated.
+	 */
+	public static void writeConfigFile(File configFile, boolean sortClasses) throws SQLException, IOException {
+		writeConfigFile(configFile, new File("."), sortClasses);
 	}
 
 	/**
 	 * Finds the annotated classes in the specified search directory or below and writes a configuration file.
 	 */
 	public static void writeConfigFile(File configFile, File searchDir) throws SQLException, IOException {
+		writeConfigFile(configFile, searchDir, false);
+	}
+
+	/**
+	 * Finds the annotated classes in the specified search directory or below and writes a configuration file.
+	 *
+	 * @param sortClasses
+	 *            Set to true to sort the classes by name before the file is generated.
+	 */
+	public static void writeConfigFile(File configFile, File searchDir, boolean sortClasses)
+			throws SQLException, IOException {
 		List<Class<?>> classList = new ArrayList<Class<?>>();
 		findAnnotatedClasses(classList, searchDir, 0);
-		writeConfigFile(configFile, classList.toArray(new Class[classList.size()]));
+		writeConfigFile(configFile, classList.toArray(new Class[classList.size()]), sortClasses);
 	}
 
 	/**
 	 * Write a configuration file with the configuration for classes.
 	 */
 	public static void writeConfigFile(File configFile, Class<?>[] classes) throws SQLException, IOException {
+		writeConfigFile(configFile, classes, false);
+	}
+
+	/**
+	 * Write a configuration file with the configuration for classes.
+	 *
+	 * @param sortClasses
+	 *            Set to true to sort the classes by name before the file is generated.
+	 */
+	public static void writeConfigFile(File configFile, Class<?>[] classes, boolean sortClasses)
+			throws SQLException, IOException {
 		System.out.println("Writing configurations to " + configFile.getAbsolutePath());
-		writeConfigFile(new FileOutputStream(configFile), classes);
+		writeConfigFile(new FileOutputStream(configFile), classes, sortClasses);
 	}
 
 	/**
 	 * Write a configuration file to an output stream with the configuration for classes.
 	 */
 	public static void writeConfigFile(OutputStream outputStream, File searchDir) throws SQLException, IOException {
+		writeConfigFile(outputStream, searchDir, false);
+	}
+
+	/**
+	 * Write a configuration file to an output stream with the configuration for classes.
+	 *
+	 * @param sortClasses
+	 *            Set to true to sort the classes by name before the file is generated.
+	 */
+	public static void writeConfigFile(OutputStream outputStream, File searchDir, boolean sortClasses)
+			throws SQLException, IOException {
 		List<Class<?>> classList = new ArrayList<Class<?>>();
 		findAnnotatedClasses(classList, searchDir, 0);
-		writeConfigFile(outputStream, classList.toArray(new Class[classList.size()]));
+		writeConfigFile(outputStream, classList.toArray(new Class[classList.size()]), sortClasses);
 	}
 
 	/**
 	 * Write a configuration file to an output stream with the configuration for classes.
 	 */
 	public static void writeConfigFile(OutputStream outputStream, Class<?>[] classes) throws SQLException, IOException {
+		writeConfigFile(outputStream, classes, false);
+	}
+
+	/**
+	 * Write a configuration file to an output stream with the configuration for classes.
+	 *
+	 * @param sortClasses
+	 *            Set to true to sort the classes and fields by name before the file is generated.
+	 */
+	public static void writeConfigFile(OutputStream outputStream, Class<?>[] classes, boolean sortClasses)
+			throws SQLException, IOException {
+		if (sortClasses) {
+			// sort our class list to make the output more deterministic
+			Class<?>[] sortedClasses = new Class<?>[classes.length];
+			System.arraycopy(classes, 0, sortedClasses, 0, classes.length);
+			Arrays.sort(sortedClasses, classComparator);
+			classes = sortedClasses;
+		}
 		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream), 4096);
 		try {
 			writeHeader(writer);
 			for (Class<?> clazz : classes) {
-				writeConfigForTable(writer, clazz);
+				writeConfigForTable(writer, clazz, sortClasses);
 			}
 			// NOTE: done is here because this is public
 			System.out.println("Done.");
@@ -179,8 +278,8 @@ public class OrmLiteConfigUtil {
 		writer.newLine();
 	}
 
-	private static void findAnnotatedClasses(List<Class<?>> classList, File dir, int level) throws SQLException,
-			IOException {
+	private static void findAnnotatedClasses(List<Class<?>> classList, File dir, int level)
+			throws SQLException, IOException {
 		for (File file : dir.listFiles()) {
 			if (file.isDirectory()) {
 				// recurse if we aren't deep enough
@@ -230,8 +329,9 @@ public class OrmLiteConfigUtil {
 		}
 	}
 
-	private static void writeConfigForTable(BufferedWriter writer, Class<?> clazz) throws SQLException, IOException {
-		String tableName = DatabaseTableConfig.extractTableName(clazz);
+	private static void writeConfigForTable(BufferedWriter writer, Class<?> clazz, boolean sortClasses)
+			throws SQLException, IOException {
+		String tableName = DatabaseTableConfig.extractTableName(databaseType, clazz);
 		List<DatabaseFieldConfig> fieldConfigs = new ArrayList<DatabaseFieldConfig>();
 		// walk up the classes finding the fields
 		try {
@@ -244,8 +344,8 @@ public class OrmLiteConfigUtil {
 				}
 			}
 		} catch (Error e) {
-			System.err.println("Skipping " + clazz + " because we got an error finding its definition: "
-					+ e.getMessage());
+			System.err.println(
+					"Skipping " + clazz + " because we got an error finding its definition: " + e.getMessage());
 			return;
 		}
 		if (fieldConfigs.isEmpty()) {
@@ -295,7 +395,7 @@ public class OrmLiteConfigUtil {
 
 	/**
 	 * Returns the package name of a file that has one of the annotations we are looking for.
-	 * 
+	 *
 	 * @return Package prefix string or null or no annotations.
 	 */
 	private static String getPackageOfClass(File file) throws IOException {
@@ -336,5 +436,16 @@ public class OrmLiteConfigUtil {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Compare fields by name.
+	 */
+	private static class ClassComparator implements Comparator<Class<?>> {
+
+		@Override
+		public int compare(Class<?> arg0, Class<?> arg1) {
+			return arg0.getName().compareTo(arg1.getName());
+		}
 	}
 }

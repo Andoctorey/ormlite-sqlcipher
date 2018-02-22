@@ -1,7 +1,5 @@
 package com.j256.ormlite.cipher.db;
 
-import java.sql.SQLException;
-
 import com.j256.ormlite.cipher.android.DatabaseTableConfigUtil;
 import com.j256.ormlite.db.BaseSqliteDatabaseType;
 import com.j256.ormlite.field.DataPersister;
@@ -13,6 +11,8 @@ import com.j256.ormlite.field.types.TimeStampStringType;
 import com.j256.ormlite.field.types.TimeStampType;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.DatabaseTableConfig;
+
+import java.sql.SQLException;
 
 /**
  * Sqlite database type information for the Android OS that makes native calls to the Android OS database APIs.
