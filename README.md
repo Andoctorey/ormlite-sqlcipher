@@ -13,10 +13,10 @@ allprojects {
 
 ```sh
 dependencies {  
-    compile 'com.j256.ormlite.cipher:ormlite-sqlcipher:1.2@aar'
+    compile 'com.j256.ormlite.cipher:ormlite-sqlcipher:1.4@aar'
     compile 'com.j256.ormlite:ormlite-core:5.1'
     compile 'com.j256.ormlite:ormlite-android:5.1'
-    compile 'net.zetetic:android-database-sqlcipher:3.5.9@aar'
+    compile 'net.zetetic:android-database-sqlcipher:4.0.1@aar'
 } 
 ```
 
