@@ -15,6 +15,7 @@ import com.j256.ormlite.support.DatabaseConnection;
 import com.j256.ormlite.table.DatabaseTableConfigLoader;
 
 import net.sqlcipher.database.SQLiteDatabase;
+import net.sqlcipher.database.SQLiteDatabaseHook;
 import net.sqlcipher.database.SQLiteOpenHelper;
 
 import java.io.BufferedReader;
@@ -47,6 +48,20 @@ public abstract class OrmLiteSqliteOpenHelper extends SQLiteOpenHelper {
      */
     public OrmLiteSqliteOpenHelper(Context context, String databaseName, SQLiteDatabase.CursorFactory factory, int databaseVersion) {
         super(context, databaseName, factory, databaseVersion);
+        logger.trace("{}: constructed connectionSource {}", this, connectionSource);
+    }
+
+    /**
+     * @param context         Associated content from the application. This is needed to locate the database.
+     * @param databaseName    Name of the database we are opening.
+     * @param factory         Cursor factory or null if none.
+     * @param databaseVersion Version of the database we are opening. This causes {@link #onUpgrade(SQLiteDatabase, int, int)} to be
+     *                        called if the stored database is a different version.
+     * @param hook            to run on pre/post key events
+     */
+    public OrmLiteSqliteOpenHelper(Context context, String databaseName, SQLiteDatabase.CursorFactory factory,
+                                   int databaseVersion, SQLiteDatabaseHook hook) {
+        super(context, databaseName, factory, databaseVersion, hook);
         logger.trace("{}: constructed connectionSource {}", this, connectionSource);
     }
 
