@@ -13,7 +13,7 @@ ext {
     siteUrl = 'https://github.com/Andoctorey/ormlite-sqlcipher'
     gitUrl = 'https://github.com/Andoctorey/ormlite-sqlcipher.git'
 
-    libraryVersion = '1.3'
+    libraryVersion = '1.4'
 
     developerId = 'andoctorey'
     developerName = 'Andrey Yegorov'
@@ -31,8 +31,8 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 28
-        versionCode 1
-        versionName "1.0"
+        versionCode 4
+        versionName "1.4"
     }
 
     buildTypes {
